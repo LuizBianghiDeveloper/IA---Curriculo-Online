@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/vagas_screen.dart';
 import 'services/auth_service.dart';
 
 void main() async {
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: isAuthenticated ? const HomeScreen() : const LoginScreen(),
+      home: isAuthenticated ? const VagasScreen() : const LoginScreen(),
     );
   }
 }
