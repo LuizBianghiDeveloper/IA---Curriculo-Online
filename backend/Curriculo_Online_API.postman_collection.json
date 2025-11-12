@@ -1,0 +1,291 @@
+{
+	"info": {
+		"_postman_id": "curriculo-online-api",
+		"name": "Curriculo Online API",
+		"description": "Collection completa para testar a API de análise de currículos com autenticação.\n\n**Como usar:**\n1. Importe esta collection no Postman\n2. Execute primeiro o endpoint \"Login\" ou \"Registro\"\n3. O token será salvo automaticamente na variável `token`\n4. Use o token nos endpoints que requerem autenticação\n\n**Variáveis da Collection:**\n- `base_url`: URL base do backend (padrão: http://localhost:8080)\n- `token`: Token de autenticação (salvo automaticamente após login/registro)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autenticação",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.token);",
+									"        console.log(\"Token salvo automaticamente: \" + jsonData.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Realiza login de um usuário no sistema.\n\n**Credenciais padrão:**\n- Usuário: admin\n- Senha: admin123\n\n**Resposta de sucesso (200):**\n```json\n{\n  \"token\": \"uuid-token-aqui\",\n  \"username\": \"admin\",\n  \"nome\": \"Administrador\",\n  \"email\": \"admin@curriculo.com\",\n  \"message\": \"Login realizado com sucesso\"\n}\n```\n\nO token é salvo automaticamente na variável de collection `token`."
+					},
+					"response": []
+				},
+				{
+					"name": "Registro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.token);",
+									"        console.log(\"Token salvo automaticamente: \" + jsonData.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"novousuario\",\n  \"password\": \"senha123\",\n  \"email\": \"usuario@email.com\",\n  \"nome\": \"Nome Completo\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registra um novo usuário no sistema.\n\n**Campos obrigatórios:**\n- `username`: Nome de usuário (único)\n- `password`: Senha (mínimo 6 caracteres)\n- `email`: Email válido\n- `nome`: Nome completo\n\n**Resposta de sucesso (201):**\n```json\n{\n  \"token\": \"uuid-token-aqui\",\n  \"username\": \"novousuario\",\n  \"nome\": \"Nome Completo\",\n  \"email\": \"usuario@email.com\",\n  \"message\": \"Usuário registrado com sucesso\"\n}\n```\n\n**Resposta de erro (409):**\n```json\n{\n  \"message\": \"Usuário já existe\"\n}\n```\n\nO token é salvo automaticamente na variável de collection `token`."
+					},
+					"response": []
+				},
+				{
+					"name": "Validar Token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "Token obtido no login ou registro"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/auth/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"validate"
+							]
+						},
+						"description": "Valida se um token de autenticação é válido.\n\n**Headers obrigatórios:**\n- `Authorization: Bearer {token}`\n\n**Resposta de sucesso (200):**\n```json\n{\n  \"token\": \"uuid-token-aqui\",\n  \"username\": \"admin\",\n  \"nome\": \"Administrador\",\n  \"email\": \"admin@curriculo.com\",\n  \"message\": \"Token válido\"\n}\n```\n\n**Resposta de erro (401):**\n```json\n{\n  \"message\": \"Token inválido ou expirado\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.collectionVariables.unset(\"token\");",
+									"    console.log(\"Token removido após logout\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"description": "Token obtido no login ou registro"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/auth/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Realiza logout do usuário atual e invalida o token.\n\n**Headers obrigatórios:**\n- `Authorization: Bearer {token}`\n\n**Resposta de sucesso (200):**\n```json\n{\n  \"message\": \"Logout realizado com sucesso\"\n}\n```\n\nO token é removido automaticamente da variável de collection após o logout."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"health"
+					]
+				},
+				"description": "Verifica se o backend está online e funcionando.\n\n**Resposta (200):**\n```\nBackend está online!\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "Analisar Currículo",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "curriculo",
+							"type": "file",
+							"src": [],
+							"description": "Arquivo do currículo (PDF, DOC ou DOCX)"
+						},
+						{
+							"key": "vaga",
+							"type": "text",
+							"value": "{\n  \"titulo\": \"Desenvolvedor Flutter\",\n  \"empresa\": \"Tech Corp\",\n  \"descricao\": \"Desenvolver aplicações mobile multiplataforma usando Flutter. Trabalhar em equipe ágil, participar de code reviews e contribuir para melhorias contínuas.\",\n  \"requisitos\": [\n    \"3+ anos de experiência com Flutter\",\n    \"Conhecimento em Dart\",\n    \"Experiência com APIs REST\",\n    \"Conhecimento em Git\",\n    \"Inglês intermediário\"\n  ],\n  \"localizacao\": \"São Paulo - SP\",\n  \"tipoContrato\": \"CLT\"\n}",
+							"description": "JSON com a descrição da vaga"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/analyze",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"analyze"
+					]
+				},
+				"description": "Envia um currículo e descrição de vaga para análise pela IA. Retorna score de compatibilidade, pontos fortes/fracos e recomendações."
+			},
+			"response": []
+		},
+		{
+			"name": "Analisar Currículo - Exemplo Completo",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "curriculo",
+							"type": "file",
+							"src": [],
+							"description": "Selecione um arquivo PDF, DOC ou DOCX"
+						},
+						{
+							"key": "vaga",
+							"type": "text",
+							"value": "{\n  \"titulo\": \"Desenvolvedor Java Senior\",\n  \"empresa\": \"Empresa Tech\",\n  \"descricao\": \"Desenvolver e manter aplicações backend em Java Spring Boot. Arquitetar soluções escaláveis, participar de decisões técnicas e mentorar desenvolvedores júnior.\",\n  \"requisitos\": [\n    \"5+ anos de experiência com Java\",\n    \"Spring Boot e Spring Framework\",\n    \"Banco de dados SQL (PostgreSQL, MySQL)\",\n    \"Experiência com microserviços\",\n    \"Docker e Kubernetes\",\n    \"Testes unitários e integração\",\n    \"Inglês avançado\"\n  ],\n  \"localizacao\": \"Remoto\",\n  \"tipoContrato\": \"PJ\"\n}",
+							"description": "Exemplo de descrição de vaga para desenvolvedor Java"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/analyze",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"analyze"
+					]
+				},
+				"description": "Exemplo completo de análise para vaga de desenvolvedor Java"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
