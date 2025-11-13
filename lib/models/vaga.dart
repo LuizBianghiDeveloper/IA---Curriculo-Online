@@ -1,4 +1,4 @@
-import 'vaga_description.dart';
+rimport 'vaga_description.dart';
 import 'curriculo_anexado.dart';
 
 class Vaga {

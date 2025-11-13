@@ -6,6 +6,7 @@ import '../models/curriculo_anexado.dart';
 import '../services/vaga_service.dart';
 import '../services/api_service.dart';
 import 'analysis_result_screen.dart';
+import 'ranking_screen.dart';
 
 class VagaDetalhesScreen extends StatefulWidget {
   final Vaga vaga;
@@ -456,10 +457,67 @@ class _VagaDetalhesScreenState extends State<VagaDetalhesScreen> {
                   ),
                   const SizedBox(height: 24),
                   
-                  // Seção de Ranking
-                  _buildRankingSection(context),
-                  
-                  const SizedBox(height: 24),
+                  // Botão para ver ranking
+                  if (_vaga.curriculosAnexados.any((c) => c.analise != null))
+                    Card(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RankingScreen(vaga: _vaga),
+                            ),
+                          ).then((_) => _carregarVaga());
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.emoji_events,
+                                  color: Colors.amber[700],
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Ver Ranking',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Veja os melhores currículos ordenados por compatibilidade',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.grey[600],
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.grey[400],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (_vaga.curriculosAnexados.any((c) => c.analise != null))
+                    const SizedBox(height: 24),
                   
                   // Seção de currículos anexados
                   Row(
@@ -709,246 +767,5 @@ class _VagaDetalhesScreenState extends State<VagaDetalhesScreen> {
     }
   }
 
-  Widget _buildRankingSection(BuildContext context) {
-    // Filtra currículos com análise e ordena por score
-    final curriculosComAnalise = _vaga.curriculosAnexados
-        .where((c) => c.analise != null)
-        .toList();
-    
-    if (curriculosComAnalise.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Ordena por score decrescente
-    curriculosComAnalise.sort((a, b) {
-      final scoreA = a.analise?.compatibilityScore ?? 0.0;
-      final scoreB = b.analise?.compatibilityScore ?? 0.0;
-      return scoreB.compareTo(scoreA);
-    });
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.emoji_events,
-              color: Colors.amber[700],
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Ranking dos Melhores Currículos',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: curriculosComAnalise.asMap().entries.map((entry) {
-                final index = entry.key;
-                final curriculo = entry.value;
-                final analise = curriculo.analise!;
-                final posicao = index + 1;
-                final scoreColor = _getScoreColor(analise.compatibilityScore);
-
-                return Container(
-                  margin: EdgeInsets.only(bottom: index < curriculosComAnalise.length - 1 ? 12 : 0),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AnalysisResultScreen(
-                            analysis: analise,
-                            vagaDescription: _vaga.toVagaDescription(),
-                          ),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: posicao <= 3
-                            ? _getRankingColor(posicao).withOpacity(0.1)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: posicao <= 3
-                            ? Border.all(
-                                color: _getRankingColor(posicao),
-                                width: 2,
-                              )
-                            : null,
-                      ),
-                      child: Row(
-                        children: [
-                          // Posição no ranking
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: posicao <= 3
-                                  ? _getRankingColor(posicao)
-                                  : Colors.grey[300],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: posicao <= 3
-                                  ? Icon(
-                                      _getRankingIcon(posicao),
-                                      color: Colors.white,
-                                      size: 24,
-                                    )
-                                  : Text(
-                                      '$posicao',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Informações do currículo
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  curriculo.nomeCandidato.isNotEmpty
-                                      ? curriculo.nomeCandidato
-                                      : 'Candidato',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  curriculo.nomeArquivo,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.grey[600],
-                                      ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: scoreColor.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.star,
-                                            size: 16,
-                                            color: scoreColor,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${analise.compatibilityScore.toStringAsFixed(0)}%',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: scoreColor,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    if (analise.isSuitable)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green[100],
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.check_circle,
-                                              size: 14,
-                                              color: Colors.green[700],
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'Adequado',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.green[700],
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Ícone de visualizar
-                          Icon(
-                            Icons.chevron_right,
-                            color: Colors.grey[400],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Color _getRankingColor(int posicao) {
-    switch (posicao) {
-      case 1:
-        return Colors.amber; // Ouro
-      case 2:
-        return Colors.grey[400]!; // Prata
-      case 3:
-        return Colors.brown[300]!; // Bronze
-      default:
-        return Colors.grey[300]!;
-    }
-  }
-
-  IconData _getRankingIcon(int posicao) {
-    switch (posicao) {
-      case 1:
-        return Icons.looks_one; // 1º lugar
-      case 2:
-        return Icons.looks_two; // 2º lugar
-      case 3:
-        return Icons.looks_3; // 3º lugar
-      default:
-        return Icons.circle;
-    }
-  }
 }
 
